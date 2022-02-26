@@ -11,7 +11,7 @@ pub struct Camera {
 impl Camera {
     pub fn new(width: f32, height: f32) -> Camera {
         Camera {
-            pos: Vector::new(0.0,0.0,1.0),
+            pos: Vector::new(0.0,0.0,0.0),
             aim: Vector::new(0.0,0.0,-1.0),
             width,
             height,

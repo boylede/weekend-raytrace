@@ -87,6 +87,9 @@ impl Vector {
          + self.y * rhs.y
          + self.z * rhs.z
     }
+    pub fn as_color(&self) -> Color {
+        Color::new(self.x + 1.0, self.y + 1.0, self.z + 1.0) * 0.5
+    }
 }
 
 impl Mul<f32> for Vector {
@@ -190,7 +193,7 @@ impl Ray {
         Ray { origin, direction }
     }
     pub fn at(&self, magnitude: f32) -> Vector {
-        self.origin + self.direction * magnitude
+        self.origin + (self.direction * magnitude)
     }
     pub fn background_color(&self) -> Color {
         let unit_direction = self.direction.unit();
@@ -201,17 +204,25 @@ impl Ray {
         let length = self.direction.length();
         Ray { origin: self.origin, direction: self.direction / length }
     }
-    pub fn hit_sphere(&self, center: Vector, radius: f32) -> bool {
+    pub fn hit_sphere(&self, center: Vector, radius: f32) -> Option<f32> {
         let oc: Vector = self.origin - center;
         let a = self.direction.dot(&self.direction);
         let b = 2.0 * oc.dot(&self.direction);
         let c = oc.dot(&oc) - radius*radius;
         let discriminant = b*b - 4.0 * a* c;
-        discriminant > 0.0
+        if discriminant < 0.0 {
+            None
+        } else {
+            Some((-b - discriminant.sqrt() ) / (2.0*a))
+        }
+        
     }
     pub fn cast(&self, _world: ()) -> Color {
-        if self.hit_sphere(Vector::new(0.0, 0.0, 0.0), 0.5) {
-            Color::RED
+        let hit = self.hit_sphere(Vector::new(0.0, 0.0, -1.0), 0.5);
+        if let Some(distance) = hit {
+            let normal = (self.at(distance) - Vector::Z_NEG).unit();
+            normal.as_color()
+            
         } else {
             self.background_color()
         }
