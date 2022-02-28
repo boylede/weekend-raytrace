@@ -1,4 +1,5 @@
 use indicatif::ProgressBar;
+use rayon::prelude::*;
 
 mod camera;
 /// image buffer
@@ -28,10 +29,9 @@ fn main() {
     let world = World::new();
 
     let pixels = camera
-        .map(|(_uv, ray)| {
         .rays(WIDTH, HEIGHT, SAMPLES)
         .map(|(_uv, rays)| {
-            let samples: Samples = rays.iter()
+            let samples: Samples = rays.par_iter()
                 .map(|ray| {
                     ray.cast(&world, MAX_BOUNCES).sample()
                 })
