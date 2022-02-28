@@ -1,6 +1,7 @@
 use std::{ops::{Add, Div, Mul, Sub}, iter::Sum};
+use std::f32::consts::PI;
 use rand::Rng;
-use crate::image::Pixel;
+use crate::{image::Pixel, world::World};
 
 /// a group of RGB color samples
 pub struct Samples {
@@ -75,6 +76,17 @@ impl Mul<f32> for Color {
             r: self.r * rhs,
             g: self.g * rhs,
             b: self.b * rhs,
+        }
+    }
+}
+
+impl Mul<Color> for f32 {
+    type Output = Color;
+    fn mul(self, rhs: Color) -> Color {
+        Color {
+            r: self * rhs.r,
+            g: self * rhs.g,
+            b: self * rhs.b,
         }
     }
 }
@@ -189,6 +201,9 @@ impl Vector {
     }
     pub fn as_color(&self) -> Color {
         Color::new(self.x + 1.0, self.y + 1.0, self.z + 1.0) * 0.5
+    }
+    pub fn is_unit(&self) -> bool {
+        self.square_length() == 1.0
     }
 }
 

@@ -6,13 +6,17 @@ mod image;
 /// numerical primatives like Vector and Ray
 mod numbers;
 
+/// for physical things to be rendered
+mod world;
+
 use camera::*;
 use image::*;
 
-use crate::numbers::Samples;
+use crate::{numbers::Samples, world::World};
 
-const HEIGHT: usize = 144;
 const WIDTH: usize = 256;
+const HEIGHT: usize = WIDTH / 16 * 9;
+
 const PIXEL_COUNT: usize = HEIGHT * WIDTH;
 const SAMPLES: usize = 100;
 
