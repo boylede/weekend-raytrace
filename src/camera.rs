@@ -57,7 +57,7 @@ impl<'a> Iterator for RayIter<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         if self.i < self.pixel_width && self.j < self.pixel_height {
             let u = self.i as f32 / (self.pixel_width as f32 - 1.0);
-            let v = self.j as f32 / (self.pixel_height as f32 - 1.0);
+            let v = (self.pixel_height - self.j) as f32 / (self.pixel_height as f32 - 1.0);
             let du = u * self.horizontal;
             let dv = v * self.vertical;
             let ray = Ray::new(self.camera.pos, self.llc + du + dv - self.camera.pos);
