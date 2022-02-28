@@ -1,21 +1,20 @@
 use indicatif::ProgressBar;
 use rayon::prelude::*;
 
+/// handling for view transforms
 mod camera;
 /// image buffer
 mod image;
-/// numerical primatives like Vector and Ray
+/// numerical primatives like Vector
 mod numbers;
-
+/// main ray casting functionality
+mod ray;
 /// for physical things to be rendered
 mod world;
 
-use camera::*;
-use image::*;
+use crate::{numbers::Samples, world::World, camera::*, image::*};
 
-use crate::{numbers::Samples, world::World};
-
-const WIDTH: usize = 256;
+const WIDTH: usize = 1024;
 const HEIGHT: usize = WIDTH / 16 * 9;
 const PIXEL_COUNT: usize = HEIGHT * WIDTH;
 const SAMPLES: usize = 100;

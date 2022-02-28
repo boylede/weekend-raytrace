@@ -5,6 +5,7 @@ use indicatif::ProgressBar;
 use crate::numbers::Color;
 
 /// RGB format with channel values from 0-255
+/// expected to be gamma-corrected
 #[derive(Copy, Clone)]
 pub struct Pixel {
     r: u8,
@@ -20,6 +21,7 @@ impl Add for Pixel {
 }
 
 impl Pixel {
+    /// produce a pixel value from gamma-corrected channels
     pub fn new(r: u8, g: u8, b: u8) -> Pixel {
         Pixel { r, g, b }
     }

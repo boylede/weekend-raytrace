@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::numbers::{Color, Hit, Ray, Vector};
+use crate::{numbers::{Color, Vector}, ray::{Hit, Ray}};
 
 pub struct World {
     spheres: Vec<(Vector, f32)>,
