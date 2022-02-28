@@ -154,6 +154,24 @@ impl Vector {
     pub fn new(x: f32, y: f32, z: f32) -> Vector {
         Vector { x, y, z }
     }
+    /// produces a new random vector with length 1
+    /// uses the technique described here: https://mathworld.wolfram.com/SpherePointPicking.html
+    pub fn random() -> Vector {
+        let mut rng = rand::thread_rng();
+        let u: f32 = rng.gen();
+        let v: f32 = rng.gen();
+        let theta = u * 2.0 * PI;
+        let phi = (2.0 * v - 1.0).acos();
+        let r = rng.gen::<f32>().cbrt();
+        let sin_theta = theta.sin();
+        let cos_theta = theta.cos();
+        let sin_phi = phi.sin();
+        let cos_phi = phi.cos();
+        let x = r * sin_phi * cos_theta;
+        let y = r * sin_phi * sin_theta;
+        let z = r * cos_phi;
+        Vector {x, y, z}
+    }
     pub fn non_zero(&self) -> bool {
         self.x != 0.0 && self.y != 0.0 && self.z != 0.0
     }
@@ -161,7 +179,10 @@ impl Vector {
         *self / self.length()
     }
     pub fn length(&self) -> f32 {
-        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+        self.square_length().sqrt()
+    }
+    pub fn square_length(&self) -> f32 {
+        self.x * self.x + self.y * self.y + self.z * self.z
     }
     pub fn dot(&self, rhs: &Vector) -> f32 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
@@ -260,6 +281,13 @@ pub struct Ray {
     direction: Vector,
 }
 
+#[derive(Copy, Clone)]
+pub struct Hit {
+    length: f32,
+    pos: Vector,
+    normal: Vector,
+}
+
 impl Ray {
     pub fn new(origin: Vector, direction: Vector) -> Ray {
         Ray { origin, direction }
@@ -279,23 +307,43 @@ impl Ray {
             direction: self.direction / length,
         }
     }
-    pub fn hit_sphere(&self, center: Vector, radius: f32) -> Option<f32> {
+    pub fn hit_sphere(&self, center: Vector, radius: f32) -> Option<Hit> {
         let oc: Vector = self.origin - center;
         let a = self.direction.dot(&self.direction);
-        let b = 2.0 * oc.dot(&self.direction);
-        let c = oc.dot(&oc) - radius * radius;
-        let discriminant = b * b - 4.0 * a * c;
+        let half_b = oc.dot(&self.direction);
+        let c = oc.square_length() - radius * radius;
+        let discriminant = half_b * half_b - a * c;
         if discriminant < 0.0 {
             None
         } else {
-            Some((-b - discriminant.sqrt()) / (2.0 * a))
+            let sqrtd = discriminant.sqrt();
+            let root = (-half_b - sqrtd) / a;
+            // todo: skipping some root-related code here that returned early
+            let length = root;
+            let pos = self.at(length);
+            let normal = (pos - center) / radius;
+            // if !normal.is_unit() {
+            //     eprintln!("debug: had a non-normalized normal vector: {}", normal.length());
+            // }
+            Some(Hit{length, pos, normal})
+            // Some((-b - discriminant.sqrt()) / (2.0 * a))
         }
     }
-    pub fn cast(&self, _world: ()) -> Color {
-        let hit = self.hit_sphere(Vector::new(0.0, 0.0, -1.0), 0.5);
-        if let Some(distance) = hit {
-            let normal = (self.at(distance) - Vector::Z_NEG).unit();
-            normal.as_color()
+    pub fn cast(&self, world: &World, depth: usize) -> Color {
+        let hit = world.hit(self);
+        if let Some(Hit{length, pos, normal}) = hit {
+            // let normal = (self.at(distance) - Vector::Z_NEG).unit();
+            // todo: i think this normal is wrong so this code is probably wrong
+            let diffuse_target = pos + normal + Vector::random();
+            // normal.as_color()
+            // 0.5 * ray_color(ray(rec.p, target - rec.p), world);
+            let next_ray = Ray::new(pos, diffuse_target - pos);
+            if depth < 1 {
+                0.5 * next_ray.cast(world, depth + 1)
+            } else {
+                next_ray.background_color()
+            }
+            
         } else {
             self.background_color()
         }
