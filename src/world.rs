@@ -1,5 +1,6 @@
-use crate::numbers::{Vector, Ray, Hit, Color};
+use std::cmp::Ordering;
 
+use crate::numbers::{Color, Hit, Ray, Vector};
 
 pub struct World {
     spheres: Vec<(Vector, f32)>,
@@ -7,9 +8,15 @@ pub struct World {
 
 impl World {
     pub fn hit(&self, ray: &Ray) -> Option<Hit> {
-        self.spheres.iter().map(|(pos, radius)| {
-            ray.hit_sphere(*pos, *radius)
-        }).filter(|o|o.is_some()).next().flatten()
+        self.spheres
+            .iter()
+            .filter_map(|(pos, radius)| ray.hit_sphere(*pos, *radius, 0.0, f32::INFINITY))
+            .filter(|h| h.front)
+            .min_by(|a, b| {
+                (&a.length)
+                    .partial_cmp(&b.length)
+                    .unwrap_or(Ordering::Equal)
+            })
     }
     pub fn new() -> World {
         let mut spheres = vec![(Vector::new(0.0, 0.0, -1.0), 0.5), (Vector::new(2.0, -100.5, -1.0), 100.0)];
