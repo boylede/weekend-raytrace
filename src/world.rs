@@ -19,7 +19,13 @@ impl World {
             })
     }
     pub fn new() -> World {
-        let mut spheres = vec![(Vector::new(0.0, 0.0, -1.0), 0.5), (Vector::new(2.0, -100.5, -1.0), 100.0)];
+        let spheres = vec![
+            (Vector::new(0.0, 0.0, -1.0), 0.5),
+            (Vector::new(1.0, 0.0, -1.0), 0.4),
+            (Vector::new(-1.0, 0.0, -1.0), 0.4),
+            (Vector::new(2.0, -1000.5, -1.0), 1000.0),
+        ];
+
         World { spheres }
     }
     pub fn background_color(&self, ray: &Ray) -> Color {
@@ -28,4 +34,3 @@ impl World {
         Color::blend(Color::WHITE, Color::GRADE, horizon)
     }
 }
-
