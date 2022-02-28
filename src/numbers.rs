@@ -23,10 +23,11 @@ impl Samples {
     }
     pub fn to_color(&self) -> Color {
         let n = self.count as f32;
+        let scale = n.recip();
         Color {
-            r: self.r / n,
-            g: self.g / n,
-            b: self.b / n,
+            r: self.r * scale,
+            g: self.g * scale,
+            b: self.b * scale,
         }
     }
 }
@@ -122,11 +123,13 @@ impl Color {
     pub fn new(r: f32, g: f32, b: f32) -> Color {
         Color { r, g, b }
     }
-    pub fn truncate(&self) -> Pixel {
-        let r = (self.r * 256.0) as u8;
-        let g = (self.g * 256.0) as u8;
-        let b = (self.b * 256.0) as u8;
-
+    /// converts this (linear) color to a (gamma-corrected) pixel value
+    /// with 8-bit channels (0-255)
+    pub fn to_pixel(&self) -> Pixel {
+        
+        let r = (self.r.sqrt() * 256.0) as u8;
+        let g = (self.g.sqrt() * 256.0) as u8;
+        let b = (self.b.sqrt() * 256.0) as u8;
         Pixel::new(r, g, b)
     }
     pub fn sample(&self) -> Samples {
@@ -373,7 +376,7 @@ impl Ray {
         let hit = world.hit(self);
         if let Some(Hit{length, pos, normal, ..}) = hit {
             if depth > 0 {
-                let diffuse_target = pos + normal + Vector::random();
+                let diffuse_target = pos + normal + Vector::random().unit();
                 let next_ray = Ray::new(pos, diffuse_target - pos);
                 next_ray.cast_inner(world, depth - 1, scale * 0.5)
             } else {

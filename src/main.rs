@@ -19,7 +19,8 @@ const WIDTH: usize = 256;
 const HEIGHT: usize = WIDTH / 16 * 9;
 const PIXEL_COUNT: usize = HEIGHT * WIDTH;
 const SAMPLES: usize = 100;
-const MAX_BOUNCES: usize = 50;
+const MAX_BOUNCES: usize = 1000;
+
 
 fn main() {
     let bar = ProgressBar::new(PIXEL_COUNT as u64);
@@ -38,7 +39,7 @@ fn main() {
                 .sum();
             let color = samples.to_color();
             bar.inc(1);
-            color.truncate()
+            color.to_pixel()
         })
         .collect();
     buffer.swap_pixels(pixels);

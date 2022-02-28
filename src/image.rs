@@ -47,7 +47,7 @@ impl ImageBuffer {
                 let g = (y as f32) / max_height;
                 let b = 0.25;
                 let c = Color::new(r,g,b);
-                buffer.push(c.truncate());
+                buffer.push(c.to_pixel());
             }
         }
         ImageBuffer {

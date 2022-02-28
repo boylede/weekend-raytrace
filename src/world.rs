@@ -10,7 +10,7 @@ impl World {
     pub fn hit(&self, ray: &Ray) -> Option<Hit> {
         self.spheres
             .iter()
-            .filter_map(|(pos, radius)| ray.hit_sphere(*pos, *radius, 0.0, f32::INFINITY))
+            .filter_map(|(pos, radius)| ray.hit_sphere(*pos, *radius, f32::EPSILON, f32::INFINITY))
             .filter(|h| h.front)
             .min_by(|a, b| {
                 (&a.length)
