@@ -123,9 +123,9 @@ impl Color {
         Color { r, g, b }
     }
     pub fn truncate(&self) -> Pixel {
-        let r = (self.r * 255.0) as u8;
-        let g = (self.g * 255.0) as u8;
-        let b = (self.b * 255.0) as u8;
+        let r = (self.r * 256.0) as u8;
+        let g = (self.g * 256.0) as u8;
+        let b = (self.b * 256.0) as u8;
 
         Pixel::new(r, g, b)
     }
@@ -142,9 +142,9 @@ impl Color {
 /// a three dimensional value
 #[derive(Copy, Clone, Debug)]
 pub struct Vector {
-    x: f32,
-    y: f32,
-    z: f32,
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
 }
 
 impl Vector {
@@ -292,8 +292,8 @@ impl Sub for Vector {
 
 #[derive(Copy, Clone)]
 pub struct Ray {
-    origin: Vector,
-    direction: Vector,
+    pub origin: Vector,
+    pub direction: Vector,
 }
 
 #[derive(Copy, Clone)]
@@ -321,11 +321,6 @@ impl Ray {
     }
     pub fn at(&self, magnitude: f32) -> Vector {
         self.origin + (self.direction * magnitude)
-    }
-    pub fn background_color(&self) -> Color {
-        let unit_direction = self.direction.unit();
-        let horizon = 0.5 * (unit_direction.y + 1.0);
-        Color::blend(Color::WHITE, Color::GRADE, horizon)
     }
     pub fn unit(&self) -> Ray {
         let length = self.direction.length();
