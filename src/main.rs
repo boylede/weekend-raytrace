@@ -19,6 +19,8 @@ const HEIGHT: usize = WIDTH / 16 * 9;
 
 const PIXEL_COUNT: usize = HEIGHT * WIDTH;
 const SAMPLES: usize = 100;
+const SAMPLE_JITTER: f32 = 0.02;
+const MAX_BOUNCES: usize = 50;
 
 fn main() {
     let bar = ProgressBar::new(PIXEL_COUNT as u64);
@@ -31,7 +33,9 @@ fn main() {
         .rays(WIDTH, HEIGHT)
         .map(|(_uv, ray)| {
             let samples: Samples = (0..SAMPLES)
-                .map(|_| ray.perturb(0.005, 0.005).cast(&world, 0).sample())
+                .map(|_| {
+                    ray.perturb(SAMPLE_JITTER, SAMPLE_JITTER).cast(&world, MAX_BOUNCES).sample()
+                })
                 .sum();
             let color = samples.to_color();
             bar.inc(1);

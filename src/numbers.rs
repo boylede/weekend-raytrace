@@ -301,6 +301,18 @@ pub struct Hit {
     length: f32,
     pos: Vector,
     normal: Vector,
+    front: bool,
+}
+
+impl Hit {
+    pub fn new(ray: &Ray, length: f32, pos: Vector, mut normal: Vector) -> Hit {
+        
+        let front = ray.direction.dot(&normal) < 0.0;
+        if !front {
+            normal = normal * -1.0;
+        }
+        Hit { length, pos, normal, front }
+    }
 }
 
 impl Ray {
@@ -334,34 +346,53 @@ impl Ray {
             let sqrtd = discriminant.sqrt();
             let root = (-half_b - sqrtd) / a;
             // todo: skipping some root-related code here that returned early
-            let length = root;
-            let pos = self.at(length);
-            let normal = (pos - center) / radius;
-            // if !normal.is_unit() {
-            //     eprintln!("debug: had a non-normalized normal vector: {}", normal.length());
-            // }
-            Some(Hit{length, pos, normal})
-            // Some((-b - discriminant.sqrt()) / (2.0 * a))
+            if root < 0.0 {
+                let root = (-half_b + sqrtd) / a;
+                if root < 0.0 {
+                    None
+                } else {
+                    // eprintln!("debug: check this usage");
+                    let length = root;
+                    let pos = self.at(length);
+                    let normal = (pos - center) / radius;
+                    Some(Hit::new(self, length, pos, normal))
+                }
+                
+            } else {
+                let length = root;
+                let pos = self.at(length);
+                let normal = (pos - center) / radius;
+                // if !normal.is_unit() {
+                //     eprintln!("debug: had a non-normalized normal vector: {}", normal.length());
+                // }
+                Some(Hit::new(self, length, pos, normal))
+                // Some((-b - discriminant.sqrt()) / (2.0 * a))
+            }
+            
         }
     }
-    pub fn cast(&self, world: &World, depth: usize) -> Color {
+    fn cast_inner(&self, world: &World, depth: usize, scale: f32) -> Color {
         let hit = world.hit(self);
-        if let Some(Hit{length, pos, normal}) = hit {
+        if let Some(Hit{length, pos, normal, ..}) = hit {
             // let normal = (self.at(distance) - Vector::Z_NEG).unit();
-            // todo: i think this normal is wrong so this code is probably wrong
+            
             let diffuse_target = pos + normal + Vector::random();
             // normal.as_color()
-            // 0.5 * ray_color(ray(rec.p, target - rec.p), world);
+            
             let next_ray = Ray::new(pos, diffuse_target - pos);
-            if depth < 1 {
-                0.5 * next_ray.cast(world, depth + 1)
+            if depth > 0 {
+                next_ray.cast_inner(world, depth - 1, scale * 0.5)
             } else {
-                next_ray.background_color()
+                // world.background_color(self)
+                Color::BLACK
             }
             
         } else {
-            self.background_color()
+            world.background_color(self) * scale
         }
+    }
+    pub fn cast(&self, world: &World, depth: usize) -> Color {
+        self.cast_inner(world, depth, 1.0 )
     }
     /// move the ray around a bit
     /// todo: this is a mess
