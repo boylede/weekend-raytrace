@@ -1,4 +1,4 @@
-use std::{ops::{Add, Div, Mul, Sub}, iter::Sum};
+use std::{ops::{Add, Div, Mul, Sub, Neg}, iter::Sum};
 use std::f32::consts::PI;
 use rand::Rng;
 use crate::{image::Pixel, world::World};
@@ -207,6 +207,13 @@ impl Vector {
     }
 }
 
+impl Neg for Vector {
+    type Output = Vector;
+    fn neg(self) -> Vector {
+        Vector { x: -self.x, y: -self.y, z: -self.z }
+    }
+}
+
 impl Mul<f32> for Vector {
     type Output = Vector;
 
@@ -298,10 +305,10 @@ pub struct Ray {
 
 #[derive(Copy, Clone)]
 pub struct Hit {
-    length: f32,
-    pos: Vector,
-    normal: Vector,
-    front: bool,
+    pub length: f32,
+    pub pos: Vector,
+    pub normal: Vector,
+    pub front: bool,
 }
 
 impl Hit {
@@ -309,7 +316,7 @@ impl Hit {
         
         let front = ray.direction.dot(&normal) < 0.0;
         if !front {
-            normal = normal * -1.0;
+            normal = -normal;
         }
         Hit { length, pos, normal, front }
     }
@@ -320,7 +327,7 @@ impl Ray {
         Ray { origin, direction }
     }
     pub fn at(&self, magnitude: f32) -> Vector {
-        self.origin + (self.direction * magnitude)
+        self.origin + (magnitude * self.direction)
     }
     pub fn unit(&self) -> Ray {
         let length = self.direction.length();
@@ -329,57 +336,49 @@ impl Ray {
             direction: self.direction / length,
         }
     }
-    pub fn hit_sphere(&self, center: Vector, radius: f32) -> Option<Hit> {
+    pub fn hit_sphere(&self, center: Vector, radius: f32, near: f32, far: f32) -> Option<Hit> {
         let oc: Vector = self.origin - center;
-        let a = self.direction.dot(&self.direction);
+        let a = self.direction.square_length();
         let half_b = oc.dot(&self.direction);
         let c = oc.square_length() - radius * radius;
         let discriminant = half_b * half_b - a * c;
         if discriminant < 0.0 {
             None
         } else {
-            let sqrtd = discriminant.sqrt();
-            let root = (-half_b - sqrtd) / a;
-            // todo: skipping some root-related code here that returned early
-            if root < 0.0 {
-                let root = (-half_b + sqrtd) / a;
-                if root < 0.0 {
-                    None
+            let root = {
+                let sqrtd = discriminant.sqrt();
+                let mut root = (-half_b - sqrtd) / a;
+                if root < near || far < root {
+                    root = (-half_b + sqrtd) / a;
+                    if root < near || far < root {
+                        None
+                    } else {
+                        Some(root)
+                    }
                 } else {
-                    // eprintln!("debug: check this usage");
-                    let length = root;
-                    let pos = self.at(length);
-                    let normal = (pos - center) / radius;
-                    Some(Hit::new(self, length, pos, normal))
+                    Some(root)
                 }
-                
-            } else {
+            };
+            if let Some(root) = root {
                 let length = root;
                 let pos = self.at(length);
                 let normal = (pos - center) / radius;
-                // if !normal.is_unit() {
-                //     eprintln!("debug: had a non-normalized normal vector: {}", normal.length());
-                // }
                 Some(Hit::new(self, length, pos, normal))
-                // Some((-b - discriminant.sqrt()) / (2.0 * a))
+            } else {
+                None
             }
-            
         }
     }
     fn cast_inner(&self, world: &World, depth: usize, scale: f32) -> Color {
         let hit = world.hit(self);
         if let Some(Hit{length, pos, normal, ..}) = hit {
-            // let normal = (self.at(distance) - Vector::Z_NEG).unit();
-            
-            let diffuse_target = pos + normal + Vector::random();
-            // normal.as_color()
-            
-            let next_ray = Ray::new(pos, diffuse_target - pos);
             if depth > 0 {
+                let diffuse_target = pos + normal + Vector::random();
+                let next_ray = Ray::new(pos, diffuse_target - pos);
                 next_ray.cast_inner(world, depth - 1, scale * 0.5)
             } else {
                 // world.background_color(self)
-                Color::BLACK
+                Color::RED
             }
             
         } else {
