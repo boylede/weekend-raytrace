@@ -15,6 +15,7 @@ impl World {
         let mut spheres = vec![(Vector::new(0.0, 0.0, -1.0), 0.5), (Vector::new(2.0, -100.5, -1.0), 100.0)];
         World { spheres }
     }
+    pub fn background_color(&self, ray: &Ray) -> Color {
         let unit_direction = ray.direction.unit();
         let horizon = 0.5 * (unit_direction.y + 1.0);
         Color::blend(Color::WHITE, Color::GRADE, horizon)

@@ -16,10 +16,8 @@ use crate::{numbers::Samples, world::World};
 
 const WIDTH: usize = 256;
 const HEIGHT: usize = WIDTH / 16 * 9;
-
 const PIXEL_COUNT: usize = HEIGHT * WIDTH;
 const SAMPLES: usize = 100;
-const SAMPLE_JITTER: f32 = 0.02;
 const MAX_BOUNCES: usize = 50;
 
 fn main() {
@@ -30,11 +28,12 @@ fn main() {
     let world = World::new();
 
     let pixels = camera
-        .rays(WIDTH, HEIGHT)
         .map(|(_uv, ray)| {
-            let samples: Samples = (0..SAMPLES)
-                .map(|_| {
-                    ray.perturb(SAMPLE_JITTER, SAMPLE_JITTER).cast(&world, MAX_BOUNCES).sample()
+        .rays(WIDTH, HEIGHT, SAMPLES)
+        .map(|(_uv, rays)| {
+            let samples: Samples = rays.iter()
+                .map(|ray| {
+                    ray.cast(&world, MAX_BOUNCES).sample()
                 })
                 .sum();
             let color = samples.to_color();
