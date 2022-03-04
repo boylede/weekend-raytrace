@@ -11,6 +11,8 @@ mod numbers;
 mod ray;
 /// for physical things to be rendered
 mod world;
+/// physical materials for meshes
+mod material;
 
 use crate::{numbers::Samples, world::World, camera::*, image::*};
 
@@ -31,7 +33,7 @@ fn main() {
     let pixels = camera
         .rays(WIDTH, HEIGHT, SAMPLES)
         .map(|(_uv, rays)| {
-            let samples: Samples = rays.par_iter()
+            let samples: Samples = rays.iter()
                 .map(|ray| {
                     ray.cast(&world, MAX_BOUNCES).sample()
                 })
