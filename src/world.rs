@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, rc::Rc};
+use std::{cmp::Ordering, rc::Rc, sync::Arc};
 
 use crate::{
     material::Material,
@@ -44,17 +44,17 @@ impl World {
 pub struct Sphere {
     pos: Vector,
     radius: f32,
-    material: Rc<Material>,
+    material: Arc<Material>,
 }
 
 impl Sphere {
     pub fn new(x: f32, y: f32, z: f32, radius: f32,) -> Sphere {
         let pos = Vector::new(x,y,z);
-        let material = Rc::new(Material::new());
+        let material = Arc::new(Material::new());
         Sphere { pos, radius, material }
     }
     pub fn with_material(mut self, material: Material) -> Self {
-        self.material = Rc::new(material);
+        self.material = Arc::new(material);
         self
     }
 }

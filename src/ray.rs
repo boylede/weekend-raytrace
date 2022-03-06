@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
 use crate::{numbers::*, world::*, material::{Material, Shader}};
 use rand::Rng;
@@ -23,11 +23,11 @@ pub struct Hit {
     pub pos: Vector,
     pub normal: Vector,
     pub front: bool,
-    pub material: Rc<Material>,
+    pub material: Arc<Material>,
 }
 
 impl Hit {
-    pub fn new(ray: &Ray, length: f32, pos: Vector, mut normal: Vector, material: &Rc<Material>) -> Hit {
+    pub fn new(ray: &Ray, length: f32, pos: Vector, mut normal: Vector, material: &Arc<Material>) -> Hit {
         
         let front = ray.direction.dot(&normal) < 0.0;
         if !front {
@@ -53,7 +53,7 @@ impl Ray {
             direction: self.direction / length,
         }
     }
-    pub fn hit_sphere(&self, center: Vector, radius: f32, near: f32, far: f32, material: &Rc<Material>) -> Option<Hit> {
+    pub fn hit_sphere(&self, center: Vector, radius: f32, near: f32, far: f32, material: &Arc<Material>) -> Option<Hit> {
         let oc: Vector = self.origin - center;
         let a = self.direction.square_length();
         let half_b = oc.dot(&self.direction);

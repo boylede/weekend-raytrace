@@ -33,7 +33,7 @@ fn main() {
     let pixels = camera
         .rays(WIDTH, HEIGHT, SAMPLES)
         .map(|(_uv, rays)| {
-            let samples: Samples = rays.iter()
+            let samples: Samples = rays.par_iter()
                 .map(|ray| {
                     ray.cast(&world, MAX_BOUNCES).sample()
                 })
