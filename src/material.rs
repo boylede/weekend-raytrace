@@ -9,9 +9,9 @@ pub struct Material {
 
 impl Material {
     pub const TEST_GLOSSY: Material = Material {metalness: 1.0, roughness: 0.0, albedo: Color::GREEN};
-    pub const TEST_METAL_RED: Material = Material {metalness: 1.0, roughness: 0.00001, albedo: Color::RED};
-    pub const TEST_METAL_BLUE: Material = Material {metalness: 1.0, roughness: 0.05, albedo: Color::BLUE};
-    pub const TEST_ROUGH: Material = Material {metalness: 0.0, roughness: 1.0, albedo: Color::BLUE};
+    pub const TEST_METAL_RED: Material = Material {metalness: 1.0, roughness: 0.25, albedo: Color::REDDISH};
+    pub const TEST_METAL_BLUE: Material = Material {metalness: 1.0, roughness: 0.0, albedo: Color::BLUE};
+    pub const TEST_ROUGH: Material = Material {metalness: 0.0, roughness: 0.5, albedo: Color::BLUE};
     pub const fn new() -> Material {
         Material { metalness: 0.0, roughness: 1.0, albedo: Color::GRAY }
     }
@@ -25,7 +25,7 @@ impl Shader for Material {
     fn scatter(&self, hit: Hit) -> Option<Bounce> {
         let Hit{by, pos, normal, ..} = hit;
         if self.metalness == 0.0 {
-            let mut scatter_direction = normal + Vector::random().unit();
+            let mut scatter_direction = normal + Vector::random().unit() * self.roughness;
             if scatter_direction.near_zero() {
                 scatter_direction = normal;
             }
@@ -37,7 +37,7 @@ impl Shader for Material {
             let rough_reflected = if self.roughness != 0.0 {
                 
                 let random = Vector::random() * self.roughness;
-                random * reflected
+                random + reflected
             } else {
                 reflected
             };

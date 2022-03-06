@@ -136,6 +136,11 @@ impl Color {
         g: 0.0,
         b: 0.0,
     };
+    pub const REDDISH: Color = Color {
+        r: 1.0,
+        g: 0.005,
+        b: 0.008,
+    };
     pub const BLUE: Color = Color {
         r: 0.0,
         g: 0.0,
@@ -145,6 +150,11 @@ impl Color {
         r: 0.0,
         g: 1.0,
         b: 0.0,
+    };
+    pub const ERROR: Color = Color {
+        r: 1.0,
+        g: 0.0,
+        b: 1.0,
     };
     pub fn blend(a: Color, b: Color, t: f32) -> Color {
         // let g = 1.0 - t;
