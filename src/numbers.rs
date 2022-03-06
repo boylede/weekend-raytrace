@@ -1,7 +1,10 @@
-use std::{ops::{Add, Div, Mul, Sub, Neg}, iter::Sum};
-use std::f32::consts::PI;
-use rand::Rng;
 use crate::{image::Pixel, world::World};
+use rand::Rng;
+use std::f32::consts::PI;
+use std::{
+    iter::Sum,
+    ops::{Add, Div, Mul, Neg, Sub},
+};
 
 /// a group of RGB color samples
 pub struct Samples {
@@ -12,7 +15,12 @@ pub struct Samples {
 }
 
 impl Samples {
-    const NONE: Samples = Samples {r: 0.0, g: 0.0, b: 0.0, count: 0};
+    const NONE: Samples = Samples {
+        r: 0.0,
+        g: 0.0,
+        b: 0.0,
+        count: 0,
+    };
     pub fn from_color(color: Color) -> Samples {
         Samples {
             r: color.r,
@@ -42,13 +50,11 @@ impl Add for Samples {
             count: self.count + rhs.count,
         }
     }
-
-    
 }
 
 impl Sum for Samples {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.reduce(|a,s|a+s).unwrap_or(Samples::NONE)
+        iter.reduce(|a, s| a + s).unwrap_or(Samples::NONE)
     }
 }
 
@@ -81,7 +87,6 @@ impl Mul for Color {
         }
     }
 }
-
 
 impl Mul<f32> for Color {
     type Output = Color;
@@ -154,7 +159,6 @@ impl Color {
     /// converts this (linear) color to a (gamma-corrected) pixel value
     /// with 8-bit channels (0-255)
     pub fn to_pixel(&self) -> Pixel {
-        
         let r = (self.r.sqrt() * 256.0) as u8;
         let g = (self.g.sqrt() * 256.0) as u8;
         let b = (self.b.sqrt() * 256.0) as u8;
@@ -213,7 +217,7 @@ impl Vector {
         let x = r * sin_phi * cos_theta;
         let y = r * sin_phi * sin_theta;
         let z = r * cos_phi;
-        Vector {x, y, z}
+        Vector { x, y, z }
     }
     pub fn non_zero(&self) -> bool {
         self.x != 0.0 && self.y != 0.0 && self.z != 0.0
@@ -236,12 +240,24 @@ impl Vector {
     pub fn is_unit(&self) -> bool {
         self.square_length() == 1.0
     }
+    /// checks if the absolute value of all axis' are close to machine epsilon
+    pub fn near_zero(&self) -> bool {
+        self.x.abs() < f32::EPSILON && self.y.abs() < f32::EPSILON && self.z.abs() < f32::EPSILON
+    }
+    pub fn reflect(&self, normal: &Vector) -> Vector {
+        *self - (2.0 * self.dot(normal)) * *normal
+        
+    }
 }
 
 impl Neg for Vector {
     type Output = Vector;
     fn neg(self) -> Vector {
-        Vector { x: -self.x, y: -self.y, z: -self.z }
+        Vector {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+        }
     }
 }
 
@@ -327,8 +343,6 @@ impl Sub for Vector {
         }
     }
 }
-
-
 
 #[test]
 fn test_vec_mul() {

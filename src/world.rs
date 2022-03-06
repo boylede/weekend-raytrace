@@ -26,9 +26,9 @@ impl World {
     }
     pub fn new() -> World {
         let spheres = vec![
-            Sphere::new(0.0, 0.0, -1.0, 0.5),
-            Sphere::new(1.0, 0.0, -1.0, 0.4).with_material(Material::TEST_GLOSSY),
-            Sphere::new(-1.0, 0.0, -1.0, 0.4).with_material(Material::TEST_ROUGH),
+            Sphere::new(0.0, 0.0, -1.0, 0.5).with_material(Material::TEST_ROUGH),
+            Sphere::new(1.0, 0.0, -1.0, 0.4).with_material(Material::TEST_METAL_RED),
+            Sphere::new(-1.0, 0.0, -1.0, 0.4).with_material(Material::TEST_METAL_BLUE),
             Sphere::new(2.0, -1000.5, -1.0, 1000.0),
         ];
 

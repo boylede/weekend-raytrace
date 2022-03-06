@@ -17,11 +17,13 @@ pub struct Bounce {
 
 #[derive(Clone)]
 pub struct Hit {
+    /// the ray that caused this hit
+    pub by: Ray,
     pub length: f32,
     pub pos: Vector,
     pub normal: Vector,
     pub front: bool,
-    pub material: Rc<Material>
+    pub material: Rc<Material>,
 }
 
 impl Hit {
@@ -32,7 +34,8 @@ impl Hit {
             normal = -normal;
         }
         let material = material.clone();
-        Hit { length, pos, normal, front, material }
+        let by = ray.clone();
+        Hit { by, length, pos, normal, front, material }
     }
 }
 
@@ -83,25 +86,28 @@ impl Ray {
             }
         }
     }
-    fn cast_inner(&self, world: &World, depth: usize, scale: f32, gathered: Color) -> Color {
+    fn cast_inner(&self, world: &World, depth: usize) -> Color {
         let hit = world.hit(self);
         if let Some(hit) = hit {
             // let Hit{pos, normal, material, ..} = hit;
             if depth > 0 {
                 let material = hit.material.clone();
                 let bounce = material.scatter(hit);
-                let Bounce {ray, attenuation} = bounce;
-                ray.cast_inner(world, depth - 1, scale * 0.5, attenuation)
+                if let Some(Bounce {ray, attenuation}) = bounce {
+                    attenuation * ray.cast_inner(world, depth - 1,)
+                } else {
+                    Color::BLACK
+                }
             } else {
                 // world.background_color(self)
                 Color::RED
             }
         } else {
-            gathered * (world.background_color(self) * scale)
+            world.background_color(self)
         }
     }
     pub fn cast(&self, world: &World, depth: usize) -> Color {
-        self.cast_inner(world, depth, 1.0, Color::WHITE )
+        self.cast_inner(world, depth)
     }
     /// move the ray around a bit
     /// todo: this is a mess
