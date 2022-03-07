@@ -250,13 +250,20 @@ impl Vector {
     pub fn is_unit(&self) -> bool {
         self.square_length() == 1.0
     }
-    /// checks if the absolute value of all axis' are close to machine epsilon
+    /// checks if the absolute value of all axis' are close to 0.0
     pub fn near_zero(&self) -> bool {
-        self.x.abs() < f32::EPSILON && self.y.abs() < f32::EPSILON && self.z.abs() < f32::EPSILON
+        let epsilon: f32 = (10.0f32).powf(-8.0);
+        self.x.abs() < epsilon && self.y.abs() < epsilon && self.z.abs() < epsilon
     }
     pub fn reflect(&self, normal: &Vector) -> Vector {
         *self - (2.0 * self.dot(normal)) * *normal
         
+    }
+    pub fn refract(&self, normal: &Vector, ratio: f32) -> Vector  {
+        let cos_theta = (-*self).dot(normal).min(1.0);
+        let r_out_perp =  ratio * (*self + cos_theta * *normal);
+        let r_out_parallel = (1.0 - r_out_perp.square_length()).sqrt() * -*normal;
+        r_out_perp + r_out_parallel
     }
 }
 
